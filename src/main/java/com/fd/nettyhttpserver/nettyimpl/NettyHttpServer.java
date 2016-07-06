@@ -67,6 +67,7 @@ public class NettyHttpServer implements HttpServer {
                         new SynchronousQueue<Runnable>(), new NamedThreadFactory("Server-Worker")),
                 config.getWorkPoolCoreSize()));
         bootstrap.setOption("child.tcpNoDelay", true);
+        bootstrap.setOption("child.keepAlive", true);
         bootstrap.setPipelineFactory(new NettyChannelPipelineFactory(sslCtx, context));
         bootstrap.bind(new InetSocketAddress(localAddress, port));
         LOG.info("server started on:" + localAddress + ":" + port);
