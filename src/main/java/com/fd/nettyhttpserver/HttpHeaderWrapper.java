@@ -28,7 +28,6 @@ public class HttpHeaderWrapper {
 
     public void setKey(String key) {
         Args.notEmpty(key, "key");
-        Args.notNull(value, "value");
         this.key = key;
     }
 
