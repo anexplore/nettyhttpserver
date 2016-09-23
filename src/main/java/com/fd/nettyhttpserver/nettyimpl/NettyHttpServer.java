@@ -60,12 +60,14 @@ public class NettyHttpServer implements HttpServer {
             sslCtx = null;
         }
         bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-                new ThreadPoolExecutor(1, config.getBossPoolSize(), 60L, TimeUnit.SECONDS,
-                        new SynchronousQueue<Runnable>(), new NamedThreadFactory("Server-Boss")),
-                config.getBossPoolCoreSize(),
-                new ThreadPoolExecutor(1, config.getWorkPoolSize(), 60L, TimeUnit.SECONDS,
-                        new SynchronousQueue<Runnable>(), new NamedThreadFactory("Server-Worker")),
-                config.getWorkPoolCoreSize()));
+                new ThreadPoolExecutor(config.getBossPoolCoreSize(), config.getBossPoolSize(), 60L,
+                        TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                        new NamedThreadFactory("Server-Boss")),
+                config.getBossPoolSize(),
+                new ThreadPoolExecutor(config.getWorkPoolCoreSize(), config.getWorkPoolSize(), 60L,
+                        TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                        new NamedThreadFactory("Server-Worker")),
+                config.getWorkPoolSize()));
         bootstrap.setOption("child.tcpNoDelay", true);
         bootstrap.setOption("child.keepAlive", true);
         bootstrap.setPipelineFactory(new NettyChannelPipelineFactory(sslCtx, context));

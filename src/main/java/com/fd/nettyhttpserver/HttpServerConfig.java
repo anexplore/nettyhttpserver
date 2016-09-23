@@ -14,7 +14,7 @@ public class HttpServerConfig {
     // reactor线程池基础大小
     private int bossPoolCoreSize = 1;
     // reactor线程池大小
-    private int bossPoolSize = Runtime.getRuntime().availableProcessors();
+    private int bossPoolSize = 1;
     // IO worker线程池大小
     private int workPoolSize = Runtime.getRuntime().availableProcessors() * 2;
     // io worker线程池基础大小

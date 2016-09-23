@@ -38,7 +38,7 @@ public class NettyChannelPipelineFactory implements ChannelPipelineFactory {
                 this.serverContext.getHttpServerConfig().getMaxExecutionThreadSize(),
                 this.serverContext.getHttpServerConfig().getMaxChannelMemorySize(),
                 this.serverContext.getHttpServerConfig().getMaxTotalMemorySize(), 60L,
-                TimeUnit.SECONDS));
+                TimeUnit.SECONDS), true, true);
     }
 
     @Override
