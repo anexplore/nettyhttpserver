@@ -52,6 +52,14 @@ public class NettyHttpServer implements HttpServer {
 
     @Override
     public boolean startup() throws Exception {
+        Args.check(config.getBossPoolCoreSize() <= config.getBossPoolSize(),
+                "boss pool core size[" + config.getBossPoolCoreSize()
+                        + "] must be less than boss pool max size[" + config.getBossPoolSize()
+                        + "]");
+        Args.check(config.getWorkPoolCoreSize() <= config.getWorkPoolSize(),
+                "work pool core size[" + config.getWorkPoolCoreSize()
+                        + "] must be less than work pool max size[" + config.getWorkPoolSize()
+                        + "]");
         final SslContext sslCtx;
         if (https) {
             SelfSignedCertificate ssc = new SelfSignedCertificate();
