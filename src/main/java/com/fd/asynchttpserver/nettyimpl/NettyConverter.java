@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,9 +13,9 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.util.CharsetUtil;
 
-import com.fd.nettyhttpserver.HttpHeaderWrapper;
-import com.fd.nettyhttpserver.HttpRequestWrapper;
-import com.fd.nettyhttpserver.utils.Args;
+import com.fd.asynchttpserver.HttpHeaderWrapper;
+import com.fd.asynchttpserver.HttpRequestWrapper;
+import com.fd.asynchttpserver.utils.Args;
 
 /**
  * 将netty内部类型转换成本模块的封装类型

@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.http;
+package com.fd.asynchttpserver.http;
 
 /**
  * Constants enumerating the HTTP headers. All headers defined in RFC1945 (HTTP/1.0), RFC2616

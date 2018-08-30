@@ -1,6 +1,6 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
-import com.fd.nettyhttpserver.HttpServerConfig;
+import com.fd.asynchttpserver.HttpServerConfig;
 
 public class NettyHttpServerConfig extends HttpServerConfig {
 

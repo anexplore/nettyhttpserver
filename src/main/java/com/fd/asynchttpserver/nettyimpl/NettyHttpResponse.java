@@ -1,12 +1,12 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fd.nettyhttpserver.HttpHeaderWrapper;
-import com.fd.nettyhttpserver.HttpResponseWrapper;
-import com.fd.nettyhttpserver.http.HttpStatus;
+import com.fd.asynchttpserver.HttpHeaderWrapper;
+import com.fd.asynchttpserver.HttpResponseWrapper;
+import com.fd.asynchttpserver.http.HttpStatus;
 
 /**
  * 非线程安全

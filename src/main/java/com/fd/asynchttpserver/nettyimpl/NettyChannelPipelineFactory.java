@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +15,7 @@ import org.jboss.netty.handler.ssl.SslContext;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.Timer;
 
-import com.fd.nettyhttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
 
 
 public class NettyChannelPipelineFactory implements ChannelPipelineFactory {

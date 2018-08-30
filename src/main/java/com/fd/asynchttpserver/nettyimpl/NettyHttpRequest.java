@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import java.net.SocketAddress;
 import java.nio.charset.Charset;
@@ -11,10 +11,10 @@ import java.util.Map;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
-import com.fd.nettyhttpserver.HttpHeaderWrapper;
-import com.fd.nettyhttpserver.HttpRequestWrapper;
-import com.fd.nettyhttpserver.http.HttpMethod;
-import com.fd.nettyhttpserver.utils.Args;
+import com.fd.asynchttpserver.HttpHeaderWrapper;
+import com.fd.asynchttpserver.HttpRequestWrapper;
+import com.fd.asynchttpserver.http.HttpMethod;
+import com.fd.asynchttpserver.utils.Args;
 
 /**
  * 非线程安全

@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.utils;
+package com.fd.asynchttpserver.utils;
 
 /**
  * Copy From Apache Http Core Utils

@@ -1,16 +1,16 @@
-package com.fd.nettyhttpserver;
+package com.fd.asynchttpserver;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.fd.nettyhttpserver.HttpHeaderWrapper;
-import com.fd.nettyhttpserver.HttpRequestHandler;
-import com.fd.nettyhttpserver.HttpRequestWrapper;
-import com.fd.nettyhttpserver.HttpResponseWrapper;
-import com.fd.nettyhttpserver.http.HttpStatus;
-import com.fd.nettyhttpserver.nettyimpl.NettyHttpServer;
-import com.fd.nettyhttpserver.nettyimpl.NettyHttpServerConfig;
+import com.fd.asynchttpserver.HttpHeaderWrapper;
+import com.fd.asynchttpserver.HttpRequestHandler;
+import com.fd.asynchttpserver.HttpRequestWrapper;
+import com.fd.asynchttpserver.HttpResponseWrapper;
+import com.fd.asynchttpserver.http.HttpStatus;
+import com.fd.asynchttpserver.nettyimpl.NettyHttpServer;
+import com.fd.asynchttpserver.nettyimpl.NettyHttpServerConfig;
 
 public class NettyServerTest {
 	

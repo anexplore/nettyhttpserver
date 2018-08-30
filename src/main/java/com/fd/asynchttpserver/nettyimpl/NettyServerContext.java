@@ -1,8 +1,8 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import org.jboss.netty.util.Timer;
 
-import com.fd.nettyhttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
 
 /**
  * 存放全局变量等 线程安全

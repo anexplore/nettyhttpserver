@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -15,11 +15,11 @@ import org.jboss.netty.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fd.nettyhttpserver.HttpRequestHandler;
-import com.fd.nettyhttpserver.HttpServer;
-import com.fd.nettyhttpserver.UriHttpRequestHandlerMapper;
-import com.fd.nettyhttpserver.utils.Args;
-import com.fd.nettyhttpserver.utils.NamedThreadFactory;
+import com.fd.asynchttpserver.HttpRequestHandler;
+import com.fd.asynchttpserver.HttpServer;
+import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.utils.Args;
+import com.fd.asynchttpserver.utils.NamedThreadFactory;
 
 public class NettyHttpServer implements HttpServer {
     private static final Logger LOG = LoggerFactory.getLogger(NettyHttpServer.class);

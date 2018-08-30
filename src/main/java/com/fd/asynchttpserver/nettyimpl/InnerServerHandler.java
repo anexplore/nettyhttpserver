@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.nettyimpl;
+package com.fd.asynchttpserver.nettyimpl;
 
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -15,9 +15,9 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fd.nettyhttpserver.HttpRequestHandler;
-import com.fd.nettyhttpserver.HttpRequestWrapper;
-import com.fd.nettyhttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.HttpRequestHandler;
+import com.fd.asynchttpserver.HttpRequestWrapper;
+import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
 
 
 public class InnerServerHandler extends SimpleChannelUpstreamHandler {

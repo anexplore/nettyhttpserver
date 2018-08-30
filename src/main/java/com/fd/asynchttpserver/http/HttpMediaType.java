@@ -1,4 +1,4 @@
-package com.fd.nettyhttpserver.http;
+package com.fd.asynchttpserver.http;
 
 /**
  * MIME类型
