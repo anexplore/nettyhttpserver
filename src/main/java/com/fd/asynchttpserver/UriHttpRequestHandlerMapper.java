@@ -1,7 +1,6 @@
 package com.fd.asynchttpserver;
 
 import java.util.Map;
-
 import com.fd.asynchttpserver.utils.Args;
 
 
@@ -23,73 +22,73 @@ import com.fd.asynchttpserver.utils.Args;
 
 public class UriHttpRequestHandlerMapper {
 
-    private final UriPatternMatcher<HttpRequestHandler> matcher;
+  private final UriPatternMatcher<HttpRequestHandler> matcher;
 
-    protected UriHttpRequestHandlerMapper(final UriPatternMatcher<HttpRequestHandler> matcher) {
-        super();
-        this.matcher = Args.notNull(matcher, "Pattern matcher");
-    }
+  protected UriHttpRequestHandlerMapper(final UriPatternMatcher<HttpRequestHandler> matcher) {
+    super();
+    this.matcher = Args.notNull(matcher, "Pattern matcher");
+  }
 
-    public UriHttpRequestHandlerMapper() {
-        this(new UriPatternMatcher<HttpRequestHandler>());
-    }
+  public UriHttpRequestHandlerMapper() {
+    this(new UriPatternMatcher<HttpRequestHandler>());
+  }
 
-    /**
-     * Registers the given {@link HttpRequestHandler} as a handler for URIs matching the given
-     * pattern.
-     *
-     * @param pattern the pattern to register the handler for.
-     * @param handler the handler.
-     */
-    public void register(final String pattern, final HttpRequestHandler handler) {
-        Args.notNull(pattern, "Pattern");
-        Args.notNull(handler, "Handler");
-        matcher.register(pattern, handler);
-    }
+  /**
+   * Registers the given {@link HttpRequestHandler} as a handler for URIs matching the given
+   * pattern.
+   *
+   * @param pattern the pattern to register the handler for.
+   * @param handler the handler.
+   */
+  public void register(final String pattern, final HttpRequestHandler handler) {
+    Args.notNull(pattern, "Pattern");
+    Args.notNull(handler, "Handler");
+    matcher.register(pattern, handler);
+  }
 
-    /**
-     * Removes registered handler, if exists, for the given pattern.
-     *
-     * @param pattern the pattern to unregister the handler for.
-     */
-    public void unregister(final String pattern) {
-        matcher.unregister(pattern);
-    }
+  /**
+   * Removes registered handler, if exists, for the given pattern.
+   *
+   * @param pattern the pattern to unregister the handler for.
+   */
+  public void unregister(final String pattern) {
+    matcher.unregister(pattern);
+  }
 
-    /**
-     * Extracts request path from the given {@link HttpRequest}
-     */
-    protected String getRequestPath(final HttpRequestWrapper request) {
-        String uriPath = request.getUri();
-        int index = uriPath.indexOf("?");
-        if (index != -1) {
-            uriPath = uriPath.substring(0, index);
-        } else {
-            index = uriPath.indexOf("#");
-            if (index != -1) {
-                uriPath = uriPath.substring(0, index);
-            }
-        }
-        return uriPath;
+  /**
+   * Extracts request path from the given {@link HttpRequest}
+   */
+  protected String getRequestPath(final HttpRequestWrapper request) {
+    String uriPath = request.getUri();
+    int index = uriPath.indexOf("?");
+    if (index != -1) {
+      uriPath = uriPath.substring(0, index);
+    } else {
+      index = uriPath.indexOf("#");
+      if (index != -1) {
+        uriPath = uriPath.substring(0, index);
+      }
     }
+    return uriPath;
+  }
 
-    /**
-     * Looks up a handler matching the given request URI.
-     *
-     * @param request the request
-     * @return handler or <code>null</code> if no match is found.
-     */
-    public HttpRequestHandler lookup(final HttpRequestWrapper request) {
-        Args.notNull(request, "HTTP request");
-        return matcher.lookup(getRequestPath(request));
-    }
+  /**
+   * Looks up a handler matching the given request URI.
+   *
+   * @param request the request
+   * @return handler or <code>null</code> if no match is found.
+   */
+  public HttpRequestHandler lookup(final HttpRequestWrapper request) {
+    Args.notNull(request, "HTTP request");
+    return matcher.lookup(getRequestPath(request));
+  }
 
-    /**
-     * 返回所有注册的handler(镜像)
-     * 
-     * @return map<String, HttpRequestHandler>
-     */
-    public Map<String, HttpRequestHandler> getHandlers() {
-        return this.matcher.getObjects();
-    }
+  /**
+   * 返回所有注册的handler(镜像)
+   * 
+   * @return map<String, HttpRequestHandler>
+   */
+  public Map<String, HttpRequestHandler> getHandlers() {
+    return this.matcher.getObjects();
+  }
 }

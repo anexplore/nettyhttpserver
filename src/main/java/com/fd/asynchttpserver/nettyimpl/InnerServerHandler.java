@@ -1,102 +1,113 @@
 package com.fd.asynchttpserver.nettyimpl;
 
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.fd.asynchttpserver.HttpRequestHandler;
-import com.fd.asynchttpserver.HttpRequestWrapper;
+import com.fd.asynchttpserver.HttpServerConfig;
 import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.http.HttpHelper;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
 
+public class InnerServerHandler extends SimpleChannelInboundHandler<HttpObject> {
+  private static final Logger LOG = LoggerFactory.getLogger(InnerServerHandler.class);
+  private final UriHttpRequestHandlerMapper handlerMapper;
+  private final HttpServerConfig config;
 
-public class InnerServerHandler extends SimpleChannelUpstreamHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(InnerServerHandler.class);
-    private UriHttpRequestHandlerMapper handlerMapper;
+  public InnerServerHandler(UriHttpRequestHandlerMapper mapper, HttpServerConfig config) {
+    this.handlerMapper = mapper;
+    this.config = config;
+  }
 
-    public InnerServerHandler(UriHttpRequestHandlerMapper mapper) {
-        this.handlerMapper = mapper;
+  @Override
+  public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+    // assert msg must be http request
+    HttpRequest request = (HttpRequest)msg;
+    if (HttpUtil.is100ContinueExpected(request)) {
+      send100Continue(request, ctx);
+      return;
     }
-
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-        HttpRequest request = (HttpRequest) e.getMessage();
-        if (HttpHeaders.is100ContinueExpected(request)) {
-            send100Continue(request, e);
-            return;
-        }
-        HttpRequestWrapper requestWrapper = NettyConverter.convertRequest(request);
-        requestWrapper.setRemoteAddress(e.getRemoteAddress());
-        HttpRequestHandler handler = handlerMapper.lookup(requestWrapper);
-        if (handler == null) {
-            sendAccessDenied(request, e);
-            return;
-        }
-        NettyHttpResponse responseWrapper = new NettyHttpResponse();
-        try {
-            handler.handle(requestWrapper, responseWrapper);
-        } catch (Exception excep) {
-            LOG.error("handle error:" + request.getUri(), excep);
-        }
-        HttpResponse response = NettyConverter.convertResponse(responseWrapper);
-        writeResponse(request, response, e);
+    NettyHttpRequest requestWrapper = NettyConverter.convertRequest(request);
+    requestWrapper.setRemoteAddress(ctx.channel().remoteAddress());
+    HttpRequestHandler handler = handlerMapper.lookup(requestWrapper);
+    if (handler == null) {
+      sendAccessDenied(request, ctx);
+      return;
     }
-
-    private void writeResponse(HttpRequest request, HttpResponse response, MessageEvent e) {
-        boolean isKeepAlive = HttpHeaders.isKeepAlive(request);
-        if (isKeepAlive) {
-            response.headers().add(HttpHeaders.Names.CONTENT_LENGTH,
-                    response.getContent().readableBytes());
-            response.headers().add(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        }
-        ChannelFuture future = e.getChannel().write(response);
-        if (!isKeepAlive) {
-            future.addListener(ChannelFutureListener.CLOSE);
-        }
+    NettyHttpResponse responseWrapper = new NettyHttpResponse();
+    try {
+      handler.handle(requestWrapper, responseWrapper);
+    } catch (Exception excep) {
+      LOG.error("handle error:" + request.uri(), excep);
     }
+    HttpResponse response = NettyConverter.convertResponse(responseWrapper);
+    writeResponse(request, response, ctx);
+  }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-        LOG.error("request error:" + e.getCause() + ", for " + e.getChannel().getRemoteAddress());
-        e.getChannel().close();
-    }
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    LOG.error("request error:" + cause + ", for " + ctx.channel().remoteAddress());
+    ctx.close();
+  }
 
-    /**
-     * 拒绝访问
-     * 
-     * @param e
-     */
-    private void sendAccessDenied(HttpRequest request, MessageEvent e) {
-        LOG.warn("deny access " + request.getUri() + " for connection:" + e.getRemoteAddress());
-        HttpResponse response =
-                new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN);
-        e.getChannel().write(response);
-        // 关闭链接
-        e.getFuture().addListener(ChannelFutureListener.CLOSE);
-    }
+  /**
+   * 拒绝访问
+   * 
+   */
+  private void sendAccessDenied(HttpRequest request, ChannelHandlerContext ctx) {
+    LOG.warn("deny access " + request.uri() + " for connection:" + ctx.channel().remoteAddress());
+    HttpResponse response =
+        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FORBIDDEN);
+    // 关闭链接
+    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+  }
 
-    /**
-     * 不支持100 continue
-     * 
-     * @param e
-     */
-    private void send100Continue(HttpRequest request, MessageEvent e) {
-        LOG.warn("100 continue refused " + request.getUri() + " for connection:"
-                + e.getRemoteAddress());
-        HttpResponse response =
-                new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
-        e.getChannel().write(response);
-        // 关闭链接
-        e.getFuture().addListener(ChannelFutureListener.CLOSE);
+  /**
+   * 不支持100 continue
+   * 
+   */
+  private void send100Continue(HttpRequest request, ChannelHandlerContext ctx) {
+    LOG.warn(
+        "100 continue refused " + request.uri() + " for connection:" + ctx.channel().remoteAddress());
+    HttpResponse response =
+        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST);
+    // 关闭链接;
+    ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+  }
+
+  /**
+   * 写出Http 响应
+   * @param request 请求
+   * @param response 响应
+   * @param ctx context
+   */
+  private void writeResponse(HttpRequest request, HttpResponse response, ChannelHandlerContext ctx) {
+    // 屏蔽掉HTTP/1.1默认支持Keep-Alive
+    boolean isKeepAlive = config.isSupportHttpAlive() && HttpHelper.isKeepAlive(request, false);
+    if (response instanceof FullHttpResponse) {
+      response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
+        ((FullHttpResponse)response).content().readableBytes());
+    } else {
+      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);
     }
+    if (isKeepAlive) {
+      response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+    }
+    ChannelFuture future = ctx.writeAndFlush(response);
+    if (!isKeepAlive) {
+      future.addListener(ChannelFutureListener.CLOSE);
+    }
+  }
 }

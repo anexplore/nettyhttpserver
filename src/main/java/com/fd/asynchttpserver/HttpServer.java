@@ -3,82 +3,54 @@ package com.fd.asynchttpserver;
 import java.util.Map;
 
 /**
- * 异步HttpServer 不支持100-continue 不支持Trunk请求
+ * 异步HttpServer 不支持100-continue 不支持trunk body请求
  * 
  */
 public interface HttpServer {
 
-    /**
-     * 启动
-     * 
-     * @return true 如果成功
-     * @throws Exception
-     */
-    boolean startup() throws Exception;
+  /**
+   * 启动
+   * 
+   * @return true 如果成功
+   * @throws Exception
+   */
+  boolean startup() throws Exception;
 
-    /**
-     * 关闭
-     */
-    void shutdown();
+  /**
+   * 关闭
+   */
+  void shutdown() throws Exception;
 
-    /**
-     * 注册处理句柄
-     * 
-     * @param path
-     * @param handler
-     */
-    void registerHandler(String path, HttpRequestHandler handler);
+  /**
+   * 注册处理句柄
+   * 
+   * @param path
+   * @param handler
+   */
+  void registerHandler(String path, HttpRequestHandler handler);
 
-    /**
-     * 设置是否采用https
-     * 
-     * @param https
-     */
-    void setHttps(boolean https);
+  /**
+   * @return 监听端口
+   */
+  int getBindPort();
 
-    /**
-     * 是否允许io压缩
-     * 
-     * @param compression
-     */
-    void enableIoCompression(boolean compression);
+  /**
+   * @return 绑定地址
+   */
+  String getBindAddress();
 
-    /**
-     * 设置绑定的本地地址
-     * 
-     * @param address
-     */
-    void setBindAddress(String address);
+  /**
+   * @return 是否采用https协议
+   */
+  boolean isHttps();
 
-    /**
-     * 设置监听端口
-     * 
-     * @param port
-     */
-    void setListenPort(int port);
+  /**
+   * @return 是否支持IO压缩
+   */
+  boolean isIoCompressionEnabled();
 
-    /**
-     * @return 监听端口
-     */
-    int getListenPort();
-
-    /**
-     * @return 绑定地址
-     */
-    String getLocalAddress();
-
-    /**
-     * @return 是否采用https协议
-     */
-    boolean isHttps();
-
-    /**
-     * @return 是否支持IO压缩
-     */
-    boolean isIoCompressionEabled();
-
-    /**
-     * @return 返回所有注册的handler
-     */
-    Map<String, HttpRequestHandler> getHandlers();
+  /**
+   * @return 返回所有注册的handler
+   */
+  Map<String, HttpRequestHandler> getHandlers();
 }

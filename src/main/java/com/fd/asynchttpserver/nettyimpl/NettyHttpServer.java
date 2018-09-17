@@ -2,147 +2,128 @@ package com.fd.asynchttpserver.nettyimpl;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.ssl.SslContext;
-import org.jboss.netty.handler.ssl.util.SelfSignedCertificate;
-import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.fd.asynchttpserver.HttpRequestHandler;
 import com.fd.asynchttpserver.HttpServer;
+import com.fd.asynchttpserver.HttpServerConfig;
 import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
 import com.fd.asynchttpserver.utils.Args;
-import com.fd.asynchttpserver.utils.NamedThreadFactory;
-
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.SelfSignedCertificate;
+/**
+ * Netty Http Server
+ * @author anexplore
+ *
+ */
 public class NettyHttpServer implements HttpServer {
-    private static final Logger LOG = LoggerFactory.getLogger(NettyHttpServer.class);
-    private NettyHttpServerConfig config;
-    private String localAddress;
-    private int port;
-    private boolean https;
-    private boolean compressionEnabled = true;
-    private final UriHttpRequestHandlerMapper handlerMap;
-    private final NettyServerContext context;
-    private final Timer timer;
-    private ServerBootstrap bootstrap;
+  private static final Logger LOG = LoggerFactory.getLogger(NettyHttpServer.class);
+  private final HttpServerConfig config;
+  private final UriHttpRequestHandlerMapper handlerMap;
+  private final NettyServerContext context;
+  private EventLoopGroup bossGroup;
+  private EventLoopGroup workGroup;
+  private ServerBootstrap bootstrap;
 
-    public NettyHttpServer(NettyHttpServerConfig config) {
-        Args.notNull(config, "http server config");
-        Args.notNull(config.getLocalAddress(), "localAddress");
-        this.config = config;
-        this.localAddress = config.getLocalAddress();
-        this.port = config.getListenPort();
-        this.https = config.isHttps();
-        this.compressionEnabled = config.isEnableCompression();
-        handlerMap = new UriHttpRequestHandlerMapper();
-        // tick is 100ms
-        timer = new HashedWheelTimer();
-        context = new NettyServerContext();
-        context.setHandlerMapper(handlerMap);
-        context.setHttpServerConfig(config);
-        context.setTimer(timer);
-    }
+  public NettyHttpServer(HttpServerConfig config) {
+    Args.notNull(config, "http server config");
+    Args.notNull(config.getBindAddress(), "localAddress");
+    this.config = config;
+    handlerMap = new UriHttpRequestHandlerMapper();
+    context = new NettyServerContext();
+    context.setHandlerMapper(handlerMap);
+    context.setHttpServerConfig(config);
+  }
 
-    @Override
-    public boolean startup() throws Exception {
-        Args.check(config.getBossPoolCoreSize() <= config.getBossPoolSize(),
-                "boss pool core size[" + config.getBossPoolCoreSize()
-                        + "] must be less than boss pool max size[" + config.getBossPoolSize()
-                        + "]");
-        Args.check(config.getWorkPoolCoreSize() <= config.getWorkPoolSize(),
-                "work pool core size[" + config.getWorkPoolCoreSize()
-                        + "] must be less than work pool max size[" + config.getWorkPoolSize()
-                        + "]");
-        final SslContext sslCtx;
-        if (https) {
-            SelfSignedCertificate ssc = new SelfSignedCertificate();
-            sslCtx = SslContext.newServerContext(ssc.certificate(), ssc.privateKey());
-        } else {
-            sslCtx = null;
-        }
-        bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-                new ThreadPoolExecutor(config.getBossPoolCoreSize(), config.getBossPoolSize(), 60L,
-                        TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                        new NamedThreadFactory("Server-Boss")),
-                config.getBossPoolSize(),
-                new ThreadPoolExecutor(config.getWorkPoolCoreSize(), config.getWorkPoolSize(), 60L,
-                        TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-                        new NamedThreadFactory("Server-Worker")),
-                config.getWorkPoolSize()));
-        bootstrap.setOption("child.tcpNoDelay", true);
-        bootstrap.setOption("child.keepAlive", true);
-        bootstrap.setPipelineFactory(new NettyChannelPipelineFactory(sslCtx, context));
-        bootstrap.bind(new InetSocketAddress(localAddress, port));
-        LOG.info("server started on:" + localAddress + ":" + port);
-        return true;
+  @Override
+  public boolean startup() throws Exception {
+    final SslContext sslCtx;
+    if (config.isHttps()) {
+      if (config.getCertificate() != null && config.getPrivateKey() != null) {
+        LOG.info("use {} and {} as ssl crt and key", config.getCertificate().getName(), config.getPrivateKey().getName());
+        sslCtx = SslContextBuilder.forServer(config.getCertificate(), config.getPrivateKey()).build();
+      } else {
+        LOG.info("use auto generated self signed ssl crt and key");
+        SelfSignedCertificate ssc = new SelfSignedCertificate();
+        sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+      }
+    } else {
+      sslCtx = null;
     }
+    context.setSslContext(sslCtx);
+    bossGroup = new NioEventLoopGroup(config.getBossPoolSize());
+    workGroup = new NioEventLoopGroup(config.getWorkPoolSize());
+    bootstrap = new ServerBootstrap();
+    bootstrap.channel(NioServerSocketChannel.class);
+    bootstrap.group(bossGroup, workGroup)
+      .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+      .option(ChannelOption.SO_BACKLOG, config.getBacklog())
+      .option(ChannelOption.SO_RCVBUF, config.getRecvBufferSize())
+      .option(ChannelOption.SO_REUSEADDR, config.isReuseAddress())
+      .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+      .childOption(ChannelOption.SO_RCVBUF, config.getRecvBufferSize())
+      .childOption(ChannelOption.TCP_NODELAY, config.isTcpNoDelay())
+      .childOption(ChannelOption.SO_KEEPALIVE, false)
+      .childOption(ChannelOption.SO_LINGER, config.getSoLinger())
+      .childOption(ChannelOption.SO_SNDBUF, config.getSendBufferSize());
+    if (LOG.isDebugEnabled()) {
+      bootstrap.handler(new LoggingHandler(LogLevel.DEBUG));
+    }
+    bootstrap.childHandler(new NettyChannelInitializer(context));
+    bootstrap.bind(new InetSocketAddress(config.getBindAddress(), config.getBindPort())).sync();
+    LOG.info("server started on:" + config.getBindAddress() + ":" + config.getBindPort());
+    return true;
+  }
 
-    @Override
-    public void shutdown() {
-        bootstrap.shutdown();
-        bootstrap.releaseExternalResources();
-        if (timer != null) {
-            timer.stop();
-        }
+  @Override
+  public void shutdown() {
+    if (bossGroup != null) {
+      bossGroup.shutdownGracefully();
     }
+    if (workGroup != null) {
+      workGroup.shutdownGracefully();
+    }
+  }
 
-    @Override
-    public void registerHandler(String path, HttpRequestHandler handler) {
-        Args.notNull(path, "path");
-        Args.notNull(handler, "handler");
-        handlerMap.register(path, handler);
-    }
+  @Override
+  public void registerHandler(String path, HttpRequestHandler handler) {
+    Args.notNull(path, "path");
+    Args.notNull(handler, "handler");
+    handlerMap.register(path, handler);
+  }
 
-    @Override
-    public void setHttps(boolean https) {
-        this.https = https;
-    }
+  @Override
+  public Map<String, HttpRequestHandler> getHandlers() {
+    return handlerMap.getHandlers();
+  }
 
-    @Override
-    public void enableIoCompression(boolean compression) {
-        this.compressionEnabled = compression;
-    }
+  @Override
+  public boolean isIoCompressionEnabled() {
+    return config.isCompressionEnabled();
+  }
 
-    @Override
-    public void setBindAddress(String address) {
-        this.localAddress = address;
-    }
+  @Override
+  public int getBindPort() {
+    return config.getBindPort();
+  }
 
-    @Override
-    public void setListenPort(int port) {
-        this.port = port;
-    }
+  @Override
+  public String getBindAddress() {
+    return config.getBindAddress();
+  }
 
-    @Override
-    public int getListenPort() {
-        return port;
-    }
-
-    @Override
-    public String getLocalAddress() {
-        return localAddress;
-    }
-
-    @Override
-    public boolean isHttps() {
-        return https;
-    }
-
-    @Override
-    public boolean isIoCompressionEabled() {
-        return compressionEnabled;
-    }
-
-    @Override
-    public Map<String, HttpRequestHandler> getHandlers() {
-        return handlerMap.getHandlers();
-    }
+  @Override
+  public boolean isHttps() {
+    return config.isHttps();
+  }
 
 }

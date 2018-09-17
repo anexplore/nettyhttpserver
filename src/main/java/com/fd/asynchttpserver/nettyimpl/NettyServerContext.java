@@ -1,39 +1,48 @@
 package com.fd.asynchttpserver.nettyimpl;
 
-import org.jboss.netty.util.Timer;
-
+import com.fd.asynchttpserver.HttpServerConfig;
 import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
+import io.netty.handler.ssl.SslContext;
 
 /**
  * 存放全局变量等 线程安全
  * 
  */
 public class NettyServerContext {
-    private NettyHttpServerConfig config;
-    private UriHttpRequestHandlerMapper handlerMapper;
-    private Timer timer;
+  private HttpServerConfig config;
+  private UriHttpRequestHandlerMapper handlerMapper;
+  private SslContext sslContext;
+  
+  /**
+   * @return 配置
+   */
+  public synchronized HttpServerConfig getHttpServerConfig() {
+    return config;
+  }
 
-    public synchronized Timer getTimer() {
-        return timer;
-    }
+  public synchronized void setHttpServerConfig(HttpServerConfig config) {
+    this.config = config;
+  }
 
-    public synchronized void setTimer(Timer timer) {
-        this.timer = timer;
-    }
+  /**
+   * @return handler映射
+   */
+  public synchronized UriHttpRequestHandlerMapper getHandlerMapper() {
+    return handlerMapper;
+  }
 
-    public synchronized NettyHttpServerConfig getHttpServerConfig() {
-        return config;
-    }
+  public synchronized void setHandlerMapper(UriHttpRequestHandlerMapper mapper) {
+    this.handlerMapper = mapper;
+  }
+  
+  /**
+   * @return ssl context
+   */
+  public synchronized SslContext getSslContext() {
+    return sslContext;
+  }
 
-    public synchronized void setHttpServerConfig(NettyHttpServerConfig config) {
-        this.config = config;
-    }
-
-    public synchronized UriHttpRequestHandlerMapper getHandlerMapper() {
-        return handlerMapper;
-    }
-
-    public synchronized void setHandlerMapper(UriHttpRequestHandlerMapper mapper) {
-        this.handlerMapper = mapper;
-    }
+  public synchronized void setSslContext(SslContext sslContext) {
+    this.sslContext = sslContext;
+  }
 }
