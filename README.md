@@ -1,4 +1,8 @@
-基于Netty的HttpServer
+基于Netty4的HttpServer
 
 Dependency:
-netty-3.10.6.Final
+netty4
+
+Notice:
+* 不支持Http Expect 100 Continue 请求
+* 没有添加自动解压缩请求体
