@@ -1,8 +1,6 @@
 package com.fd.asynchttpserver.nettyimpl;
 
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,8 +8,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 /**
@@ -20,7 +16,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
  *
  */
 public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
-  private static final Logger LOG = LoggerFactory.getLogger(NettyChannelInitializer.class);
   private final NettyServerContext serverContext;
   private final UriHttpRequestHandlerMapper handlerMapper;
 
@@ -34,9 +29,6 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
     ChannelPipeline pipeline = ch.pipeline();
     if (serverContext.getSslContext() != null) {
       pipeline.addLast("ssl", serverContext.getSslContext().newHandler(ch.alloc()));
-    }
-    if (LOG.isDebugEnabled()) {
-      pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
     }
     pipeline.addLast("readtimeouthandler",
         new ReadTimeoutHandler(serverContext.getHttpServerConfig().getReadTimeout(), TimeUnit.MILLISECONDS));

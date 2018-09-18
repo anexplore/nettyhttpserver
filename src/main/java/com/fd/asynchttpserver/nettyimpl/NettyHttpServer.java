@@ -15,8 +15,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
@@ -75,9 +73,6 @@ public class NettyHttpServer implements HttpServer {
       .childOption(ChannelOption.SO_KEEPALIVE, false)
       .childOption(ChannelOption.SO_LINGER, config.getSoLinger())
       .childOption(ChannelOption.SO_SNDBUF, config.getSendBufferSize());
-    if (LOG.isDebugEnabled()) {
-      bootstrap.handler(new LoggingHandler(LogLevel.DEBUG));
-    }
     bootstrap.childHandler(new NettyChannelInitializer(context));
     bootstrap.bind(new InetSocketAddress(config.getBindAddress(), config.getBindPort())).sync();
     LOG.info("server started on:" + config.getBindAddress() + ":" + config.getBindPort());

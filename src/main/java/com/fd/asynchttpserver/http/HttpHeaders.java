@@ -138,7 +138,11 @@ public final class HttpHeaders {
 
   /** RFC 2616 (HTTP/1.1) Section 14.37 */
   public static final String RETRY_AFTER = "Retry-After";
-
+  
+  public static final String SET_COOKIE = "Set-Cookie";
+  
+  public static final String SET_COOKIE2 = "Set-Cookie2";
+  
   /** RFC 1945 (HTTP/1.0) Section 10.14, RFC 2616 (HTTP/1.1) Section 14.38 */
   public static final String SERVER = "Server";
 

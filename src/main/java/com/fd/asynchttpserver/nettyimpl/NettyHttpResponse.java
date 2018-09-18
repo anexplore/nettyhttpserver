@@ -57,19 +57,36 @@ public class NettyHttpResponse implements HttpResponseWrapper {
   public String getHttpVersion() {
     return httpVersion;
   }
-
+  
+  /**
+   * 设置body体
+   * @param body body体数据
+   */
   public void setBody(byte[] body) {
     this.body = body;
   }
 
+  /**
+   * 设置body体
+   * @param body 字符串格式的body
+   */
   public void setStringBody(String body) {
     this.sBody = body;
   }
 
+  /**
+   * 设置HTTP头 
+   * <p>所有已经设置的HTTP头都将情空 用headers替换</p>
+   * @param headers HTTP头
+   */
   public void setHeaders(List<HttpHeaderWrapper> headers) {
     this.headers = headers;
   }
 
+  /**
+   * 添加HTTP头
+   * @param header HTTP头
+   */
   public void addHeader(HttpHeaderWrapper header) {
     if (header == null) {
       return;
@@ -79,7 +96,26 @@ public class NettyHttpResponse implements HttpResponseWrapper {
     }
     headers.add(header);
   }
+  
+  /**
+   * 添加HTTP头
+   * @param key 名称  不可为空
+   * @param value 值 可为空
+   */
+  public void addHeader(String key, String value) {
+    if (key == null) {
+      return;
+    }
+    if (headers == null) {
+      headers = new ArrayList<>(8);
+    }
+    headers.add(new HttpHeaderWrapper(key, value));
+  }
 
+  /**
+   * 设置HTTP版本 不设置默认HTTP/1.1
+   * @param httpVersion
+   */
   public void setHttpVersion(String httpVersion) {
     this.httpVersion = httpVersion;
   }
@@ -89,6 +125,10 @@ public class NettyHttpResponse implements HttpResponseWrapper {
     return statusCode;
   }
 
+  /**
+   * 设置状态码 不设置默认200
+   * @param code 状态码
+   */
   public void setStatusCode(int code) {
     this.statusCode = code;
   }

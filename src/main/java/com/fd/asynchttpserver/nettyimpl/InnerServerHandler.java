@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import com.fd.asynchttpserver.HttpRequestHandler;
 import com.fd.asynchttpserver.HttpServerConfig;
 import com.fd.asynchttpserver.UriHttpRequestHandlerMapper;
+import com.fd.asynchttpserver.http.HttpHeaders;
 import com.fd.asynchttpserver.http.HttpHelper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -12,7 +13,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
@@ -97,13 +97,13 @@ public class InnerServerHandler extends SimpleChannelInboundHandler<HttpObject> 
     // 屏蔽掉HTTP/1.1默认支持Keep-Alive
     boolean isKeepAlive = config.isSupportHttpAlive() && HttpHelper.isKeepAlive(request, false);
     if (response instanceof FullHttpResponse) {
-      response.headers().add(HttpHeaderNames.CONTENT_LENGTH,
+      response.headers().set(HttpHeaders.CONTENT_LENGTH,
         ((FullHttpResponse)response).content().readableBytes());
     } else {
-      response.headers().add(HttpHeaderNames.CONTENT_LENGTH, 0);
+      response.headers().set(HttpHeaders.CONTENT_LENGTH, 0);
     }
     if (isKeepAlive) {
-      response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+      response.headers().set(HttpHeaders.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
     }
     ChannelFuture future = ctx.writeAndFlush(response);
     if (!isKeepAlive) {
