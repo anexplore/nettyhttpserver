@@ -83,7 +83,7 @@ public class DefaultConfigHelper {
   }
   
   public static int defaultSoLinger() {
-    return convertIntegerValue(System.getProperty(PROPERTY_PREFIX + SO_LINGER, "0"));
+    return convertIntegerValue(System.getProperty(PROPERTY_PREFIX + SO_LINGER, "-1"));
   }
   
   public static boolean defaultTcpNoDelay() {
