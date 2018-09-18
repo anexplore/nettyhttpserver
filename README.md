@@ -1,14 +1,14 @@
-基于Netty4的HttpServer
+## 基于Netty4的HttpServer
 
-Dependency:
+### Dependency:
 netty4
 
-Notice:
+### Notice:
 * 不支持Http Expect 100 Continue 请求
 * 没有添加自动解压缩请求体
 
 
-Example:
+### Example:
 ```java
 DefaultHttpServerConfig.Builder config = new DefaultHttpServerConfig.Builder();
     config.setBindAddress("127.0.0.1")
