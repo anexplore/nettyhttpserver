@@ -10,7 +10,7 @@ netty4
 
 ### Example:
 ```java
-DefaultHttpServerConfig.Builder config = new DefaultHttpServerConfig.Builder();
+    DefaultHttpServerConfig.Builder config = new DefaultHttpServerConfig.Builder();
     config.setBindAddress("127.0.0.1")
       .setBindPort(8089)
       .setReadTimeout(5000)
